@@ -1,5 +1,5 @@
 <html>
-
+<meta charset="utf-8">
 <!--
   Adding Brandon Jones and Colin MacKenzie IV's gl-matrix library that provides easy to
   use vector and matrix maths operations.  Source: https://github.com/toji/gl-matrix
@@ -479,76 +479,9 @@
     // which get mapped to [0, 1] by OpenGL
     let data = new Uint8Array(256 * 4);
 
-
-    ////////////////////////////////////////////////////////////////////////////////////////
-    /// Beginning of the provided transfer function
-
-    // The provided transfer function that you'll replace with your own solution is a
-    // relatively simple ramp with the first 50 values being set to 0 to reduce the noise in
-    // the image.  The remainder of the ramp is just using different angles for the color
-    // components
-    // const redWidth = document.getElementById("red-width").value;
-    // const redPos = document.getElementById("red-position").value;
-    // // console.log("Test");
-    // // console.log(redWidth);
-    const cutoff = 50;
-
-    // for (let i = redPos; i < redWidth; i += 1) {
-    //   // Set RGBA all to 0
-    //   data[i] = 256;
-    //   data[i + 1] = 256;
-    //   data[i + 2] = 256;
-    //   data[i + 3] = 256;
-    // }
-
-    // // For now, just create a linear ramp from 0 to 1. We start at the cutoff value and fill
-    // // the rest of the array
-    // for (let i = cutoff * 4; i < 256 * 4; i += 4) {
-    //   // convert i into a value [0, 256] and set it 
-    //   const it = i / 4;
-    //   data[i] = 2 * it;
-    //   data[i + 1] = it;
-    //   data[i + 2] = 3 * it;
-    //   data[i + 3] = it;
-    // }
-
-    // The provided transfer function that you'll replace with your own solution is a
-  // relatively simple ramp with the first 50 values being set to 0 to reduce the noise in
-  // the image.  The remainder of the ramp is just using different angles for the color
-  // components
-
-   // set first indexes up to RGBA*cutoff to 0 to skip noise/air
-   for (let i = 0; i < cutoff * 4; i += 4) {
-    // Set RGBA all to 0
-    data[i] = 0;
-    data[i + 1] = 0;
-    data[i + 2] = 0;
-    data[i + 3] = 0;
-    counter = i;
-  }
-
-
-  data=fillColor("first", data);
-  data=fillColor("second", data);
-  data=fillColor("third", data);
-
-
-// // For now, just create a linear ramp from 0 to 1. We start at the cutoff value and fill
-// // the rest of the array
-// for (let i = cutoff * 4; i < 256 * 4; i += 4) {
-//   // convert i into a value [0, 256] and set it 
-//   const it = i / 4;
-//   data[i] = 2 * it;
-//   data[i + 1] = it;
-//   data[i + 2] = 3 * it;
-//   data[i + 3] = it;
-// }
-
-    /// End of the provided transfer function
-    ////////////////////////////////////////////////////////////////////////////////////////
-
-    // @TODO:  Replace the transfer function specification above with your own transfer
-    //         function editor result
+    data = fillColor("first", data);
+    data = fillColor("second", data);
+    data = fillColor("third", data);
 
     // Upload the new data to the texture
     console.log(117, "Updating the transfer function texture");
@@ -557,30 +490,44 @@
   }
 
   // New function
-  function fillColor(order, data){
+  function fillColor(order, data) {
 
-    // Get variables
-    const width = document.getElementById(order+"-width").value*4;
-    const pos = document.getElementById(order+"-position").value;
-    const op = document.getElementById(order+"-opacity").value/256;
+    // Get variables from sliders
+    const width = document.getElementById(order + "-width").value*4;
+    const pos = document.getElementById(order + "-position").value;
+    const op = document.getElementById(order + "-opacity").value;
 
-    // Get color and do in RGB
-    const color = document.getElementById(order+"-color").value;
-    const r = parseInt(color.substr(1,2), 16)
-    const g = parseInt(color.substr(3,2), 16)
-    const b = parseInt(color.substr(5,2), 16)
+    // Get color
+    // Skip first sign (#) 
+    // Select 2 values (for r,g,b) each
+    // Convert from hexadecimal to base 10
+    const color = document.getElementById(order + "-color").value;
+    const r = parseInt(color.substr(1, 2), 16);
+    const g = parseInt(color.substr(3, 2), 16);
+    const b = parseInt(color.substr(5, 2), 16);
 
-    console.log(op)
-    for (let i = pos*4-(width*4)/2; i < pos*4+(width*4)/2; i += 4) {
-      // Set RGBA 
-      data[i] =data[i]+ r;
-      data[i + 1] = data[i+1]+g;
-      data[i + 2] = data[i+2]+b;
-      data[i + 3] = 255;
+    // Another example: Width only changes to the right of the block
+    // let i = pos * 4; i < pos * 4 + (width * 4); i += 4)
+    for (let i = pos * 4 - (width * 4) / 2; i < pos * 4 + (width * 4) / 2; i += 4) {
+
+      // Sum of values
+      data[i] = data[i] + r;
+      data[i + 1] = data[i+1] + g;
+      data[i + 2] = data[i+2] + b;
+      data[i + 3] = op;
+
+      // Another example:
+      // Overwrite the previous color
+      // const it = i / 4;
+      // data[i] = r;
+      // data[i + 1] = g;
+      // data[i + 2] = 3 * b;
+      // data[i + 3] = it;
+
     }
+
     return data;
   }
-
 
   /// Function that renders the bounding box using the provided model and view matrices. The
   /// front-facing triangles are rendered into the framebuffer provided at 'fbFront', the
@@ -1075,43 +1022,48 @@
 <body onload="main();">
   <p id="error"></p>
   <div id="flex" style="display: flex;">
-    <canvas id="glCanvas" width="640" height="480"></canvas>
-     <!-- Transfer function -->
+    <div>
+      <canvas id="glCanvas" width="640" height="480"></canvas>      
+    </div>
+    <!--
+    Add some UI elements here to modify the transfer function.  As mentioned above, you need to call the function 'triggerTransferFunctionUpdate' to trigger and update of the GPU representation of the transfer function texture.  If you don't call that function, no change will be visible.
+  -->
+    <!-- Transfer function -->
     <div style="margin-left: 50px;">
       <h2>Ändra Transferfunction</h2>
       <div><input type="color" id="first-color" name="first-color" value="#ff0000"
           oninput="triggerTransferFunctionUpdate();"></div>
-      <div> Opacity: <input type="range" min="0" max="100" value="50" class="slider" id="first-opacity"
+      <div> Opacity: <input type="range" min="0" max="255" value="50" class="slider" id="first-opacity"
           oninput="triggerTransferFunctionUpdate();"></div>
-      <div> Width: <input type="range" min="0" max="64" value="10" class="slider" id="first-width" 
+      <div> Width: <input type="range" min="0" max="64" value="10" class="slider" id="first-width"
           oninput="triggerTransferFunctionUpdate();"></div>
       <div> Position <input type="range" min="0" max="256" value="50" class="slider" id="first-position"
           oninput="triggerTransferFunctionUpdate();"></div>
-          <!-- New color -->
-          <div style="margin:30px;"></div>
+      <!-- New color -->
+      <div style="margin:30px;"></div>
       <div><input type="color" id="second-color" name="second-color" value="#00ff00"
           oninput="triggerTransferFunctionUpdate();"></div>
-      <div> Opacity: <input type="range" min="0" max="100" value="50" class="slider" id="second-opacity"
+      <div> Opacity: <input type="range" min="0" max="255" value="50" class="slider" id="second-opacity"
           oninput="triggerTransferFunctionUpdate();"></div>
-      <div> Width: <input type="range" min="0" max="64" value="10" class="slider" id="second-width" 
+      <div> Width: <input type="range" min="0" max="64" value="10" class="slider" id="second-width"
           oninput="triggerTransferFunctionUpdate();"></div>
       <div> Position <input type="range" min="0" max="256" value="125" class="slider" id="second-position"
           oninput="triggerTransferFunctionUpdate();"></div>
-          <!-- New color -->
-          <div style="margin:30px;"></div>
+      <!-- New color -->
+      <div style="margin:30px;"></div>
       <div><input type="color" id="third-color" name="third-color" value="#0000ff"
           oninput="triggerTransferFunctionUpdate();"></div>
-      <div> Opacity: <input type="range" min="0" max="100" value="50" class="slider" id="third-opacity"
+      <div> Opacity: <input type="range" min="0" max="255" value="50" class="slider" id="third-opacity"
           oninput="triggerTransferFunctionUpdate();"></div>
-      <div> Width: <input type="range" min="0" max="64" value="10" class="slider" id="third-width" 
+      <div> Width: <input type="range" min="0" max="64" value="10" class="slider" id="third-width"
           oninput="triggerTransferFunctionUpdate();"></div>
       <div> Position <input type="range" min="0" max="256" value="200" class="slider" id="third-position"
           oninput="triggerTransferFunctionUpdate();"></div>
     </div>
-    
+
   </div>
-    <div style="display: flex;">
-      <div>
+  <div style="display: flex;">
+    <div>
       <p>
         Rendering parameters
       <div>Step size: <input type="range" min="10" max="10000" value="1000" class="slider" id="stepSize"
@@ -1141,24 +1093,20 @@
       <p>
         Debugging
       <div>Rendering output:</div>
-      <div><input type="radio" name="debug-output" value="volume" onchange="triggerRendering();" >Volume
+      <div><input type="radio" name="debug-output" value="volume" onchange="triggerRendering();">Volume
         Rendering</div>
       <div><input type="radio" name="debug-output" value="entry" onchange="triggerRendering();">Entry Points</div>
       <div><input type="radio" name="debug-output" value="exit" onchange="triggerRendering();">Exit Points</div>
       <div><input type="radio" name="debug-output" value="direction" onchange="triggerRendering();">Ray direction</div>
-      <div><input type="radio" name="debug-output" value="transfer" onchange="triggerRendering();" checked>Transfer Function
+      <div><input type="radio" name="debug-output" value="transfer" onchange="triggerRendering();" checked>Transfer
+        Function
       </div>
       <div><input type="radio" name="debug-output" value="slice" onchange="triggerRendering();">Volume Slice</div>
       <div><input type="radio" name="debug-output" value="slice-transfer" onchange="triggerRendering();">Volume Slice
         with transfer function</div>
       </p>
     </div>
-    </div>
-   
-  <!--
-    Add some UI elements here to modify the transfer function.  As mentioned above, you need to call the function 'triggerTransferFunctionUpdate' to trigger and update of the GPU representation of the transfer function texture.  If you don't call that function, no change will be visible.
-  -->
-
+  </div>
 
 </body>
 
